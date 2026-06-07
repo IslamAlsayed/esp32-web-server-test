@@ -1,405 +1,443 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>لوحة التحكم في الليدات</title>
+    <style>
+      :root {
+        --bg1: #0f172a;
+        --bg2: #1e293b;
+        --card: rgba(15, 23, 42, 0.75);
+        --text: #e2e8f0;
+        --muted: #94a3b8;
+        --success: #22c55e;
+        --danger: #ef4444;
+      }
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>لوحة التحكم في الليدات</title>
-  <style>
-    :root {
-      --bg1: #0f172a;
-      --bg2: #1e293b;
-      --card: rgba(15, 23, 42, 0.75);
-      --text: #e2e8f0;
-      --muted: #94a3b8;
-      --success: #22c55e;
-      --danger: #ef4444;
-    }
+      * {
+        box-sizing: border-box;
+      }
 
-    * {
-      box-sizing: border-box;
-    }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Cairo", "Tajawal", system-ui, sans-serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at 20% 10%, #334155 0%, transparent 40%),
+          radial-gradient(circle at 80% 90%, #1d4ed8 0%, transparent 40%),
+          linear-gradient(135deg, var(--bg1), var(--bg2));
+        display: grid;
+        place-items: center;
+        padding: 24px;
+      }
 
-    body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: "Cairo", "Tajawal", system-ui, sans-serif;
-      color: var(--text);
-      background: radial-gradient(circle at 20% 10%, #334155 0%, transparent 40%),
-        radial-gradient(circle at 80% 90%, #1d4ed8 0%, transparent 40%),
-        linear-gradient(135deg, var(--bg1), var(--bg2));
-      display: grid;
-      place-items: center;
-      padding: 24px;
-    }
+      .panel {
+        width: min(650px, 100%);
+        background: var(--card);
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        border-radius: 22px;
+        backdrop-filter: blur(8px);
+        box-shadow: 0 20px 45px rgba(15, 23, 42, 0.45);
+        padding: 28px;
+      }
 
-    .panel {
-      width: min(650px, 100%);
-      background: var(--card);
-      border: 1px solid rgba(148, 163, 184, 0.25);
-      border-radius: 22px;
-      backdrop-filter: blur(8px);
-      box-shadow: 0 20px 45px rgba(15, 23, 42, 0.45);
-      padding: 28px;
-    }
+      h1 {
+        margin: 0 0 8px;
+        font-size: clamp(1.4rem, 3vw, 2rem);
+        text-align: center;
+      }
 
-    h1 {
-      margin: 0 0 8px;
-      font-size: clamp(1.4rem, 3vw, 2rem);
-      text-align: center;
-    }
+      .subtitle {
+        margin: 0 0 24px;
+        text-align: center;
+        color: var(--muted);
+      }
 
-    .subtitle {
-      margin: 0 0 24px;
-      text-align: center;
-      color: var(--muted);
-    }
+      .lights {
+        gap: 14px;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+      }
 
-    .lights {
-      gap: 14px;
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-    }
+      .light-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 14px;
+        border-radius: 14px;
+        background: rgba(30, 41, 59, 0.7);
+        border: 1px solid rgba(148, 163, 184, 0.2);
+      }
 
-    .light-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 14px;
-      border-radius: 14px;
-      background: rgba(30, 41, 59, 0.7);
-      border: 1px solid rgba(148, 163, 184, 0.2);
-    }
+      .light-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 700;
+      }
 
-    .light-info {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-weight: 700;
-    }
+      .dot {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        box-shadow: 0 0 12px currentColor;
+      }
 
-    .dot {
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      box-shadow: 0 0 12px currentColor;
-    }
+      .green {
+        color: #22c55e;
+      }
 
-    .green {
-      color: #22c55e;
-    }
+      .orange {
+        color: #facc15;
+      }
 
-    .yellow {
-      color: #facc15;
-    }
+      .red {
+        color: #ef4444;
+      }
 
-    .red {
-      color: #ef4444;
-    }
+      .switch {
+        position: relative;
+        width: 54px;
+        height: 30px;
+        display: inline-block;
+      }
 
-    .switch {
-      position: relative;
-      width: 54px;
-      height: 30px;
-      display: inline-block;
-    }
+      .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
 
-    .switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
+      .slider {
+        position: absolute;
+        inset: 0;
+        cursor: pointer;
+        background: #334155;
+        border-radius: 999px;
+        transition: 0.2s;
+      }
 
-    .slider {
-      position: absolute;
-      inset: 0;
-      cursor: pointer;
-      background: #334155;
-      border-radius: 999px;
-      transition: 0.2s;
-    }
+      .slider::before {
+        content: "";
+        position: absolute;
+        width: 24px;
+        height: 24px;
+        right: 3px;
+        top: 3px;
+        background: #f8fafc;
+        border-radius: 50%;
+        transition: 0.2s;
+      }
 
-    .slider::before {
-      content: "";
-      position: absolute;
-      width: 24px;
-      height: 24px;
-      right: 3px;
-      top: 3px;
-      background: #f8fafc;
-      border-radius: 50%;
-      transition: 0.2s;
-    }
+      .switch input:checked + .slider {
+        background: #0ea5e9;
+      }
 
-    .switch input:checked+.slider {
-      background: #0ea5e9;
-    }
+      .switch input:checked + .slider::before {
+        transform: translateX(-24px);
+      }
 
-    .switch input:checked+.slider::before {
-      transform: translateX(-24px);
-    }
+      .actions {
+        margin-top: 20px;
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
 
-    .actions {
-      margin-top: 20px;
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
+      .key-box {
+        margin-top: 14px;
+        display: grid;
+        gap: 8px;
+      }
 
-    .key-box {
-      margin-top: 14px;
-      display: grid;
-      gap: 8px;
-    }
+      .key-box label {
+        color: var(--muted);
+        font-size: 0.92rem;
+        font-weight: 700;
+      }
 
-    .key-box label {
-      color: var(--muted);
-      font-size: 0.92rem;
-      font-weight: 700;
-    }
+      .key-box input {
+        width: 100%;
+        border: 1px solid rgba(148, 163, 184, 0.35);
+        background: rgba(15, 23, 42, 0.55);
+        color: var(--text);
+        border-radius: 10px;
+        padding: 10px 12px;
+        font-size: 0.95rem;
+      }
 
-    .key-box input {
-      width: 100%;
-      border: 1px solid rgba(148, 163, 184, 0.35);
-      background: rgba(15, 23, 42, 0.55);
-      color: var(--text);
-      border-radius: 10px;
-      padding: 10px 12px;
-      font-size: 0.95rem;
-    }
+      .warning {
+        margin: 4px 0 0;
+        color: #fbbf24;
+        font-size: 0.85rem;
+        display: none;
+      }
 
-    .warning {
-      margin: 4px 0 0;
-      color: #fbbf24;
-      font-size: 0.85rem;
-      display: none;
-    }
+      button {
+        border: none;
+        border-radius: 12px;
+        padding: 12px 20px;
+        font-weight: 700;
+        cursor: pointer;
+        transition:
+          transform 0.15s ease,
+          opacity 0.15s ease;
+      }
 
-    button {
-      border: none;
-      border-radius: 12px;
-      padding: 12px 20px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: transform 0.15s ease, opacity 0.15s ease;
-    }
+      button:hover {
+        transform: translateY(-1px);
+      }
 
-    button:hover {
-      transform: translateY(-1px);
-    }
+      .send-btn {
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        color: white;
+        min-width: 180px;
+      }
 
-    .send-btn {
-      background: linear-gradient(135deg, #22c55e, #16a34a);
-      color: white;
-      min-width: 180px;
-    }
+      .reset-btn {
+        background: rgba(148, 163, 184, 0.18);
+        color: var(--text);
+        border: 1px solid rgba(148, 163, 184, 0.3);
+      }
 
-    .reset-btn {
-      background: rgba(148, 163, 184, 0.18);
-      color: var(--text);
-      border: 1px solid rgba(148, 163, 184, 0.3);
-    }
+      #status {
+        margin-top: 16px;
+        text-align: center;
+        min-height: 24px;
+        font-weight: 700;
+      }
 
-    #status {
-      margin-top: 16px;
-      text-align: center;
-      min-height: 24px;
-      font-weight: 700;
-    }
+      .ok {
+        color: var(--success);
+      }
 
-    .ok {
-      color: var(--success);
-    }
+      .err {
+        color: var(--danger);
+      }
+    </style>
+  </head>
 
-    .err {
-      color: var(--danger);
-    }
-  </style>
-</head>
+  <body>
+    <main class="panel">
+      <h1>لوحة التحكم في الليدات</h1>
+      <p class="subtitle">اختر حالة كل ليد ثم اضغط إرسال</p>
 
-<body>
-  <main class="panel">
-    <h1>لوحة التحكم في الليدات</h1>
-    <p class="subtitle">اختر حالة كل ليد ثم اضغط إرسال</p>
+      <section class="lights">
+        <article class="light-row">
+          <div class="light-info"><span class="dot blue"></span>ليد أزرق</div>
+          <label class="switch" aria-label="مفتاح ليد أزرق">
+            <input id="blueToggle" type="checkbox" />
+            <span class="slider"></span>
+          </label>
+        </article>
 
-    <section class="lights">
-      <article class="light-row">
-        <div class="light-info"><span class="dot blue"></span>ليد أزرق</div>
-        <label class="switch" aria-label="مفتاح ليد أزرق">
-          <input id="blueToggle" type="checkbox" />
-          <span class="slider"></span>
-        </label>
-      </article>
+        <article class="light-row">
+          <div class="light-info"><span class="dot green"></span>ليد أخضر</div>
+          <label class="switch" aria-label="مفتاح ليد أخضر">
+            <input id="greenToggle" type="checkbox" />
+            <span class="slider"></span>
+          </label>
+        </article>
 
-      <article class="light-row">
-        <div class="light-info"><span class="dot green"></span>ليد أخضر</div>
-        <label class="switch" aria-label="مفتاح ليد أخضر">
-          <input id="greenToggle" type="checkbox" />
-          <span class="slider"></span>
-        </label>
-      </article>
+        <article class="light-row">
+          <div class="light-info"><span class="dot orange"></span>ليد أصفر</div>
+          <label class="switch" aria-label="مفتاح ليد أصفر">
+            <input id="orangeToggle" type="checkbox" />
+            <span class="slider"></span>
+          </label>
+        </article>
 
-      <article class="light-row">
-        <div class="light-info"><span class="dot yellow"></span>ليد أصفر</div>
-        <label class="switch" aria-label="مفتاح ليد أصفر">
-          <input id="yellowToggle" type="checkbox" />
-          <span class="slider"></span>
-        </label>
-      </article>
+        <article class="light-row">
+          <div class="light-info"><span class="dot red"></span>ليد أحمر</div>
+          <label class="switch" aria-label="مفتاح ليد أحمر">
+            <input id="redToggle" type="checkbox" />
+            <span class="slider"></span>
+          </label>
+        </article>
+      </section>
 
-      <article class="light-row">
-        <div class="light-info"><span class="dot red"></span>ليد أحمر</div>
-        <label class="switch" aria-label="مفتاح ليد أحمر">
-          <input id="redToggle" type="checkbox" />
-          <span class="slider"></span>
-        </label>
-      </article>
-    </section>
+      <div class="actions">
+        <button class="send-btn" id="sendBtn" type="button">
+          إرسال الحالة
+        </button>
+        <button class="reset-btn" id="resetBtn" type="button">
+          مسح الاختيارات
+        </button>
+      </div>
 
-    <div class="actions">
-      <button class="send-btn" id="sendBtn" type="button">إرسال الحالة</button>
-      <button class="reset-btn" id="resetBtn" type="button">مسح الاختيارات</button>
-    </div>
+      <div class="key-box">
+        <label for="usernameInput">اسم مستخدم Adafruit</label>
+        <input
+          id="usernameInput"
+          type="text"
+          placeholder="مثال: ism_mostakhdem"
+          autocomplete="off"
+          value="islamalsayed"
+        />
 
-    <div class="key-box">
-      <label for="usernameInput">اسم مستخدم Adafruit</label>
-      <input id="usernameInput" type="text" placeholder="مثال: ism_mostakhdem" autocomplete="off" value="islamalsayed" />
+        <label for="feedInput">اسم الـ Feed</label>
+        <input
+          id="feedInput"
+          type="text"
+          placeholder="مثال: light"
+          autocomplete="off"
+          value="light"
+        />
 
-      <label for="feedInput">اسم الـ Feed</label>
-      <input id="feedInput" type="text" placeholder="مثال: light" autocomplete="off" value="light" />
+        <label for="aioKeyInput">مفتاح Adafruit AIO</label>
+        <input
+          id="aioKeyInput"
+          type="password"
+          placeholder="ألصق مفتاح AIO هنا"
+          autocomplete="off"
+          value=""
+        />
+        <p
+          class="warning"
+          id="httpsWarning"
+          role="alert"
+          aria-live="assertive"
+        ></p>
+      </div>
 
-      <label for="aioKeyInput">مفتاح Adafruit AIO</label>
-      <input id="aioKeyInput" type="password" placeholder="ألصق مفتاح AIO هنا" autocomplete="off" value="aio_DlgB58wVJTSNclPNzGUr3BFuWyEY" />
-      <p class="warning" id="httpsWarning" role="alert" aria-live="assertive"></p>
-    </div>
+      <p id="status" aria-live="polite"></p>
+    </main>
 
-    <p id="status" aria-live="polite"></p>
-  </main>
+    <script>
+      const blueToggle = document.getElementById("blueToggle");
+      const greenToggle = document.getElementById("greenToggle");
+      const orangeToggle = document.getElementById("orangeToggle");
+      const redToggle = document.getElementById("redToggle");
+      const sendBtn = document.getElementById("sendBtn");
+      const resetBtn = document.getElementById("resetBtn");
+      const usernameInput = document.getElementById("usernameInput");
+      const feedInput = document.getElementById("feedInput");
+      const aioKeyInput = document.getElementById("aioKeyInput");
+      const httpsWarning = document.getElementById("httpsWarning");
+      const statusEl = document.getElementById("status");
 
-  <script>
-    const blueToggle = document.getElementById("blueToggle");
-    const greenToggle = document.getElementById("greenToggle");
-    const yellowToggle = document.getElementById("yellowToggle");
-    const redToggle = document.getElementById("redToggle");
-    const sendBtn = document.getElementById("sendBtn");
-    const resetBtn = document.getElementById("resetBtn");
-    const usernameInput = document.getElementById("usernameInput");
-    const feedInput = document.getElementById("feedInput");
-    const aioKeyInput = document.getElementById("aioKeyInput");
-    const httpsWarning = document.getElementById("httpsWarning");
-    const statusEl = document.getElementById("status");
+      function getLightsState() {
+        return {
+          blue: blueToggle.checked ? 1 : 0,
+          green: greenToggle.checked ? 1 : 0,
+          orange: orangeToggle.checked ? 1 : 0,
+          red: redToggle.checked ? 1 : 0,
+        };
+      }
 
-    function getLightsState() {
-      return {
-        blue: blueToggle.checked ? 1 : 0,
-        green: greenToggle.checked ? 1 : 0,
-        yellow: yellowToggle.checked ? 1 : 0,
-        red: redToggle.checked ? 1 : 0
-      };
-    }
+      function setStatus(message, type) {
+        statusEl.textContent = message;
+        statusEl.className = type;
+      }
 
-    function setStatus(message, type) {
-      statusEl.textContent = message;
-      statusEl.className = type;
-    }
+      function isValidIdentifier(value) {
+        return /^[a-zA-Z0-9_-]{1,64}$/.test(value);
+      }
 
-    function isValidIdentifier(value) {
-      return /^[a-zA-Z0-9_-]{1,64}$/.test(value);
-    }
+      function enforceSecureContext() {
+        const insecureMessage =
+          "⚠️ الاتصال غير آمن (HTTP). لحماية مفتاحك استخدم HTTPS.";
+        const isSecure = window.isSecureContext;
 
-    function enforceSecureContext() {
-      const insecureMessage = "⚠️ الاتصال غير آمن (HTTP). لحماية مفتاحك استخدم HTTPS.";
-      const isSecure = window.isSecureContext;
+        if (!isSecure) {
+          httpsWarning.textContent = insecureMessage;
+          httpsWarning.style.display = "block";
+          sendBtn.disabled = true;
+          sendBtn.title = "الإرسال متوقف لحين استخدام HTTPS";
+        } else {
+          httpsWarning.textContent = "";
+          httpsWarning.style.display = "none";
+        }
+      }
 
-      if (!isSecure) {
-        httpsWarning.textContent = insecureMessage;
-        httpsWarning.style.display = "block";
+      async function sendLightsState() {
+        const lightsState = getLightsState();
+        const username = usernameInput.value.trim();
+        const feed = feedInput.value.trim();
+        const aioKey = aioKeyInput.value.trim();
+        if (!username || !feed || !aioKey) {
+          setStatus("من فضلك أدخل اسم المستخدم واسم الـ Feed و AIO Key", "err");
+          return;
+        }
+        if (!isValidIdentifier(username) || !isValidIdentifier(feed)) {
+          setStatus(
+            "اسم المستخدم واسم الـ Feed يجب أن يحتويان على حروف أو أرقام أو - أو _ فقط",
+            "err",
+          );
+          return;
+        }
+        const feedUrl = `https://io.adafruit.com/api/v2/${encodeURIComponent(username)}/feeds/${encodeURIComponent(feed)}/data`;
+
         sendBtn.disabled = true;
-        sendBtn.title = "الإرسال متوقف لحين استخدام HTTPS";
-      } else {
-        httpsWarning.textContent = "";
-        httpsWarning.style.display = "none";
-      }
-    }
+        setStatus("جاري الإرسال...", "");
 
-    async function sendLightsState() {
-      const lightsState = getLightsState();
-      const username = usernameInput.value.trim();
-      const feed = feedInput.value.trim();
-      const aioKey = aioKeyInput.value.trim();
-      if (!username || !feed || !aioKey) {
-        setStatus("من فضلك أدخل اسم المستخدم واسم الـ Feed و AIO Key", "err");
-        return;
-      }
-      if (!isValidIdentifier(username) || !isValidIdentifier(feed)) {
-        setStatus("اسم المستخدم واسم الـ Feed يجب أن يحتويان على حروف أو أرقام أو - أو _ فقط", "err");
-        return;
-      }
-      const feedUrl = `https://io.adafruit.com/api/v2/${encodeURIComponent(username)}/feeds/${encodeURIComponent(feed)}/data`;
+        try {
+          const response = await fetch(feedUrl, {
+            method: "POST",
+            headers: {
+              "X-AIO-Key": aioKey,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ value: JSON.stringify(lightsState) }),
+          });
 
-      sendBtn.disabled = true;
-      setStatus("جاري الإرسال...", "");
+          if (!response.ok) {
+            throw new Error(
+              `فشل الإرسال: ${response.status} ${response.statusText}`,
+            );
+          }
 
-      try {
-        const response = await fetch(feedUrl, {
-          method: "POST",
-          headers: {
-            "X-AIO-Key": aioKey,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ value: JSON.stringify(lightsState) })
-        });
-
-        if (!response.ok) {
-          throw new Error(`فشل الإرسال: ${response.status} ${response.statusText}`);
+          setStatus("تم إرسال حالة الليدات بنجاح ✅", "ok");
+        } catch (error) {
+          console.error(error);
+          setStatus(`حدث خطأ أثناء الإرسال ❌ (${error.message})`, "err");
+        } finally {
+          sendBtn.disabled = false;
         }
-
-        setStatus("تم إرسال حالة الليدات بنجاح ✅", "ok");
-      } catch (error) {
-        console.error(error);
-        setStatus(`حدث خطأ أثناء الإرسال ❌ (${error.message})`, "err");
-      } finally {
-        sendBtn.disabled = false;
       }
-    }
 
-    async function resetAll() {
-      blueToggle.checked = false;
-      greenToggle.checked = false;
-      yellowToggle.checked = false;
-      redToggle.checked = false;
-      setStatus("تم مسح الاختيارات محلياً", "");
+      async function resetAll() {
+        blueToggle.checked = false;
+        greenToggle.checked = false;
+        orangeToggle.checked = false;
+        redToggle.checked = false;
+        setStatus("تم مسح الاختيارات محلياً", "");
 
-            const feedUrl = `https://io.adafruit.com/api/v2/${encodeURIComponent(username)}/feeds/${encodeURIComponent(feed)}/data`;
+        const feedUrl = `https://io.adafruit.com/api/v2/${encodeURIComponent(username)}/feeds/${encodeURIComponent(feed)}/data`;
 
-      try {
-        const response = await fetch(feedUrl, {
-          method: "POST",
-          headers: {
-            "X-AIO-Key": aioKey,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ value: JSON.stringify(lightsState) })
-        });
+        try {
+          const response = await fetch(feedUrl, {
+            method: "POST",
+            headers: {
+              "X-AIO-Key": aioKey,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              value: JSON.stringify({ blue: 0, green: 0, orange: 0, red: 0 }),
+            }),
+          });
 
-        if (!response.ok) {
-          throw new Error(`فشل الإرسال: ${response.status} ${response.statusText}`);
+          if (!response.ok) {
+            throw new Error(
+              `فشل الإرسال: ${response.status} ${response.statusText}`,
+            );
+          }
+
+          setStatus("تم إرسال حالة الليدات بنجاح ✅", "ok");
+        } catch (error) {
+          console.error(error);
+          setStatus(`حدث خطأ أثناء الإرسال ❌ (${error.message})`, "err");
+        } finally {
+          sendBtn.disabled = false;
         }
-
-        setStatus("تم إرسال حالة الليدات بنجاح ✅", "ok");
-      } catch (error) {
-        console.error(error);
-        setStatus(`حدث خطأ أثناء الإرسال ❌ (${error.message})`, "err");
-      } finally {
-        sendBtn.disabled = false;
       }
-    }
 
-    sendBtn.addEventListener("click", sendLightsState);
-    resetBtn.addEventListener("click", resetAll);
-    enforceSecureContext();
-  </script>
-</body>
-
+      sendBtn.addEventListener("click", sendLightsState);
+      resetBtn.addEventListener("click", resetAll);
+      enforceSecureContext();
+    </script>
+  </body>
 </html>
