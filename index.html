@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -15,7 +16,9 @@
       --danger: #ef4444;
     }
 
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
     body {
       margin: 0;
@@ -23,8 +26,8 @@
       font-family: "Cairo", "Tajawal", system-ui, sans-serif;
       color: var(--text);
       background: radial-gradient(circle at 20% 10%, #334155 0%, transparent 40%),
-                  radial-gradient(circle at 80% 90%, #1d4ed8 0%, transparent 40%),
-                  linear-gradient(135deg, var(--bg1), var(--bg2));
+        radial-gradient(circle at 80% 90%, #1d4ed8 0%, transparent 40%),
+        linear-gradient(135deg, var(--bg1), var(--bg2));
       display: grid;
       place-items: center;
       padding: 24px;
@@ -53,8 +56,9 @@
     }
 
     .lights {
-      display: grid;
       gap: 14px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
     }
 
     .light-row {
@@ -81,9 +85,17 @@
       box-shadow: 0 0 12px currentColor;
     }
 
-    .green { color: #22c55e; }
-    .yellow { color: #facc15; }
-    .red { color: #ef4444; }
+    .green {
+      color: #22c55e;
+    }
+
+    .yellow {
+      color: #facc15;
+    }
+
+    .red {
+      color: #ef4444;
+    }
 
     .switch {
       position: relative;
@@ -119,11 +131,11 @@
       transition: 0.2s;
     }
 
-    .switch input:checked + .slider {
+    .switch input:checked+.slider {
       background: #0ea5e9;
     }
 
-    .switch input:checked + .slider::before {
+    .switch input:checked+.slider::before {
       transform: translateX(-24px);
     }
 
@@ -173,7 +185,9 @@
       transition: transform 0.15s ease, opacity 0.15s ease;
     }
 
-    button:hover { transform: translateY(-1px); }
+    button:hover {
+      transform: translateY(-1px);
+    }
 
     .send-btn {
       background: linear-gradient(135deg, #22c55e, #16a34a);
@@ -194,16 +208,30 @@
       font-weight: 700;
     }
 
-    .ok { color: var(--success); }
-    .err { color: var(--danger); }
+    .ok {
+      color: var(--success);
+    }
+
+    .err {
+      color: var(--danger);
+    }
   </style>
 </head>
+
 <body>
   <main class="panel">
     <h1>لوحة التحكم في الليدات</h1>
     <p class="subtitle">اختر حالة كل ليد ثم اضغط إرسال</p>
 
     <section class="lights">
+      <article class="light-row">
+        <div class="light-info"><span class="dot blue"></span>ليد أزرق</div>
+        <label class="switch" aria-label="مفتاح ليد أزرق">
+          <input id="blueToggle" type="checkbox" />
+          <span class="slider"></span>
+        </label>
+      </article>
+
       <article class="light-row">
         <div class="light-info"><span class="dot green"></span>ليد أخضر</div>
         <label class="switch" aria-label="مفتاح ليد أخضر">
@@ -236,13 +264,13 @@
 
     <div class="key-box">
       <label for="usernameInput">اسم مستخدم Adafruit</label>
-      <input id="usernameInput" type="text" placeholder="مثال: ism_mostakhdem" autocomplete="off" />
+      <input id="usernameInput" type="text" placeholder="مثال: ism_mostakhdem" autocomplete="off" value="islamalsayed" />
 
       <label for="feedInput">اسم الـ Feed</label>
-      <input id="feedInput" type="text" placeholder="مثال: light" autocomplete="off" />
+      <input id="feedInput" type="text" placeholder="مثال: light" autocomplete="off" value="light" />
 
       <label for="aioKeyInput">مفتاح Adafruit AIO</label>
-      <input id="aioKeyInput" type="password" placeholder="ألصق مفتاح AIO هنا" autocomplete="off" />
+      <input id="aioKeyInput" type="password" placeholder="ألصق مفتاح AIO هنا" autocomplete="off" value="aio_DlgB58wVJTSNclPNzGUr3BFuWyEY" />
       <p class="warning" id="httpsWarning" role="alert" aria-live="assertive"></p>
     </div>
 
@@ -250,6 +278,7 @@
   </main>
 
   <script>
+    const blueToggle = document.getElementById("blueToggle");
     const greenToggle = document.getElementById("greenToggle");
     const yellowToggle = document.getElementById("yellowToggle");
     const redToggle = document.getElementById("redToggle");
@@ -263,6 +292,7 @@
 
     function getLightsState() {
       return {
+        blue: blueToggle.checked ? 1 : 0,
         green: greenToggle.checked ? 1 : 0,
         yellow: yellowToggle.checked ? 1 : 0,
         red: redToggle.checked ? 1 : 0
@@ -334,11 +364,36 @@
       }
     }
 
-    function resetAll() {
+    async function resetAll() {
+      blueToggle.checked = false;
       greenToggle.checked = false;
       yellowToggle.checked = false;
       redToggle.checked = false;
       setStatus("تم مسح الاختيارات محلياً", "");
+
+            const feedUrl = `https://io.adafruit.com/api/v2/${encodeURIComponent(username)}/feeds/${encodeURIComponent(feed)}/data`;
+
+      try {
+        const response = await fetch(feedUrl, {
+          method: "POST",
+          headers: {
+            "X-AIO-Key": aioKey,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ value: JSON.stringify(lightsState) })
+        });
+
+        if (!response.ok) {
+          throw new Error(`فشل الإرسال: ${response.status} ${response.statusText}`);
+        }
+
+        setStatus("تم إرسال حالة الليدات بنجاح ✅", "ok");
+      } catch (error) {
+        console.error(error);
+        setStatus(`حدث خطأ أثناء الإرسال ❌ (${error.message})`, "err");
+      } finally {
+        sendBtn.disabled = false;
+      }
     }
 
     sendBtn.addEventListener("click", sendLightsState);
@@ -346,4 +401,5 @@
     enforceSecureContext();
   </script>
 </body>
+
 </html>
