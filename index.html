@@ -135,6 +135,35 @@
       justify-content: center;
     }
 
+    .key-box {
+      margin-top: 14px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .key-box label {
+      color: var(--muted);
+      font-size: 0.92rem;
+      font-weight: 700;
+    }
+
+    .key-box input {
+      width: 100%;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      background: rgba(15, 23, 42, 0.55);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 0.95rem;
+    }
+
+    .warning {
+      margin: 4px 0 0;
+      color: #fbbf24;
+      font-size: 0.85rem;
+      display: none;
+    }
+
     button {
       border: none;
       border-radius: 12px;
@@ -176,24 +205,24 @@
 
     <section class="lights">
       <article class="light-row">
-        <div class="light-info"><span class="dot green"></span>Green LED</div>
-        <label class="switch" aria-label="Green LED toggle">
+        <div class="light-info"><span class="dot green"></span>ليد أخضر</div>
+        <label class="switch" aria-label="مفتاح ليد أخضر">
           <input id="greenToggle" type="checkbox" />
           <span class="slider"></span>
         </label>
       </article>
 
       <article class="light-row">
-        <div class="light-info"><span class="dot yellow"></span>Yellow LED</div>
-        <label class="switch" aria-label="Yellow LED toggle">
+        <div class="light-info"><span class="dot yellow"></span>ليد أصفر</div>
+        <label class="switch" aria-label="مفتاح ليد أصفر">
           <input id="yellowToggle" type="checkbox" />
           <span class="slider"></span>
         </label>
       </article>
 
       <article class="light-row">
-        <div class="light-info"><span class="dot red"></span>Red LED</div>
-        <label class="switch" aria-label="Red LED toggle">
+        <div class="light-info"><span class="dot red"></span>ليد أحمر</div>
+        <label class="switch" aria-label="مفتاح ليد أحمر">
           <input id="redToggle" type="checkbox" />
           <span class="slider"></span>
         </label>
@@ -202,21 +231,34 @@
 
     <div class="actions">
       <button class="send-btn" id="sendBtn" type="button">إرسال الحالة</button>
-      <button class="reset-btn" id="resetBtn" type="button">إيقاف الكل</button>
+      <button class="reset-btn" id="resetBtn" type="button">مسح الاختيارات</button>
+    </div>
+
+    <div class="key-box">
+      <label for="usernameInput">اسم مستخدم Adafruit</label>
+      <input id="usernameInput" type="text" placeholder="مثال: ism_mostakhdem" autocomplete="off" />
+
+      <label for="feedInput">اسم الـ Feed</label>
+      <input id="feedInput" type="text" placeholder="مثال: light" autocomplete="off" />
+
+      <label for="aioKeyInput">مفتاح Adafruit AIO</label>
+      <input id="aioKeyInput" type="password" placeholder="ألصق مفتاح AIO هنا" autocomplete="off" />
+      <p class="warning" id="httpsWarning" role="alert" aria-live="assertive"></p>
     </div>
 
     <p id="status" aria-live="polite"></p>
   </main>
 
   <script>
-    const FEED_URL = "https://io.adafruit.com/api/v2/islamalsayed/feeds/light/data";
-    const AIO_KEY = "aio_QGVY00xmoovC2gDREa1flAJKc6jG";
-
     const greenToggle = document.getElementById("greenToggle");
     const yellowToggle = document.getElementById("yellowToggle");
     const redToggle = document.getElementById("redToggle");
     const sendBtn = document.getElementById("sendBtn");
     const resetBtn = document.getElementById("resetBtn");
+    const usernameInput = document.getElementById("usernameInput");
+    const feedInput = document.getElementById("feedInput");
+    const aioKeyInput = document.getElementById("aioKeyInput");
+    const httpsWarning = document.getElementById("httpsWarning");
     const statusEl = document.getElementById("status");
 
     function getLightsState() {
@@ -232,29 +274,61 @@
       statusEl.className = type;
     }
 
+    function isValidIdentifier(value) {
+      return /^[a-zA-Z0-9_-]{1,64}$/.test(value);
+    }
+
+    function enforceSecureContext() {
+      const insecureMessage = "⚠️ الاتصال غير آمن (HTTP). لحماية مفتاحك استخدم HTTPS.";
+      const isSecure = window.isSecureContext;
+
+      if (!isSecure) {
+        httpsWarning.textContent = insecureMessage;
+        httpsWarning.style.display = "block";
+        sendBtn.disabled = true;
+        sendBtn.title = "الإرسال متوقف لحين استخدام HTTPS";
+      } else {
+        httpsWarning.textContent = "";
+        httpsWarning.style.display = "none";
+      }
+    }
+
     async function sendLightsState() {
       const lightsState = getLightsState();
+      const username = usernameInput.value.trim();
+      const feed = feedInput.value.trim();
+      const aioKey = aioKeyInput.value.trim();
+      if (!username || !feed || !aioKey) {
+        setStatus("من فضلك أدخل اسم المستخدم واسم الـ Feed و AIO Key", "err");
+        return;
+      }
+      if (!isValidIdentifier(username) || !isValidIdentifier(feed)) {
+        setStatus("اسم المستخدم واسم الـ Feed يجب أن يحتويان على حروف أو أرقام أو - أو _ فقط", "err");
+        return;
+      }
+      const feedUrl = `https://io.adafruit.com/api/v2/${encodeURIComponent(username)}/feeds/${encodeURIComponent(feed)}/data`;
+
       sendBtn.disabled = true;
       setStatus("جاري الإرسال...", "");
 
       try {
-        const response = await fetch(FEED_URL, {
+        const response = await fetch(feedUrl, {
           method: "POST",
           headers: {
-            "X-AIO-Key": AIO_KEY,
+            "X-AIO-Key": aioKey,
             "Content-Type": "application/json"
           },
           body: JSON.stringify({ value: JSON.stringify(lightsState) })
         });
 
         if (!response.ok) {
-          throw new Error(`Request failed with status ${response.status}`);
+          throw new Error(`فشل الإرسال: ${response.status} ${response.statusText}`);
         }
 
         setStatus("تم إرسال حالة الليدات بنجاح ✅", "ok");
       } catch (error) {
         console.error(error);
-        setStatus("حدث خطأ أثناء الإرسال ❌", "err");
+        setStatus(`حدث خطأ أثناء الإرسال ❌ (${error.message})`, "err");
       } finally {
         sendBtn.disabled = false;
       }
@@ -264,11 +338,12 @@
       greenToggle.checked = false;
       yellowToggle.checked = false;
       redToggle.checked = false;
-      setStatus("تم إيقاف جميع الليدات", "");
+      setStatus("تم مسح الاختيارات محلياً", "");
     }
 
     sendBtn.addEventListener("click", sendLightsState);
     resetBtn.addEventListener("click", resetAll);
+    enforceSecureContext();
   </script>
 </body>
 </html>
